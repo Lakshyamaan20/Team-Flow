@@ -3,7 +3,7 @@ services:
     name: teamflow-backend
     runtime: node
     plan: free
-    rootDir: backend
+    rootDir: team-flow-2/backend
     buildCommand: npm install && npm run build
     startCommand: npm start
     envVars:
