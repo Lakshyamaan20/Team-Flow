@@ -4,8 +4,8 @@ services:
     runtime: node
     plan: free
     rootDir: team-flow-2/backend
-    buildCommand: npm install && npm run build
-    startCommand: npm start
+    buildCommand: npm install
+startCommand: npx tsx src/index.ts
     envVars:
       - key: JWT_SECRET
         sync: false
