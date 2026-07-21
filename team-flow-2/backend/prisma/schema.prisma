@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String
+  avatar        String?
+  role          String    @default("MEMBER")
+  departmentId  String?
+  department    Department? @relation(fields: [departmentId], references: [id])
+  assignedTasks Task[]    @relation("TaskAssignee")
+  createdTasks  Task[]    @relation("TaskCreator")
+  comments      Comment[]
+  activityLogs  ActivityLog[]
+  notifications Notification[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Department {
+  id      String @id @default(cuid())
+  name    String @unique
+  users   User[]
+  projects Project[]
+}
+
+model Project {
+  id           String        @id @default(cuid())
+  name         String
+  description  String?
+  startDate    DateTime
+  endDate      DateTime?
+  status       String        @default("ACTIVE")
+  departmentId String?
+  department   Department?   @relation(fields: [departmentId], references: [id])
+  tasks        Task[]
+  createdBy    String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Task {
+  id            String      @id @default(cuid())
+  title         String
+  description   String?
+  status        String      @default("TODO")
+  priority      String      @default("MEDIUM")
+  dueDate       DateTime?
+  estimatedHours Float?
+  actualHours   Float?
+  tags          String  @default("")
+  assigneeId    String?
+  assignee      User?       @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  createdById   String?
+  createdBy     User?       @relation("TaskCreator", fields: [createdById], references: [id])
+  projectId     String
+  project       Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  comments      Comment[]
+  activityLogs  ActivityLog[]
+  riskScore     Float?
+  riskLevel     String?
+  sortOrder     Int         @default(0)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  action    String
+  details   String?
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   @default("INFO")
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model TaskDependency {
+  id           String @id @default(cuid())
+  taskId       String
+  task         Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  dependsOnId  String
+  dependsOn    Task   @relation("dependsOn", fields: [dependsOnId], references: [id], onDelete: Cascade)
+  type         String @default("FS")
+
+  @@unique([taskId, dependsOnId])
+}

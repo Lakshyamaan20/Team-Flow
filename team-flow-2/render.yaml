@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: teamflow-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: DATABASE_URL
+        value: file:./prisma/teamflow.db
+      - key: FRONTEND_URL
+        sync: false
+      - key: PORT
+        value: 4000
